@@ -19,7 +19,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .intro .tips{background:#fff8f0;border-radius:12px;padding:16px;text-align:left;margin:16px 0}
 .intro .tips h3{font-size:14px;color:var(--accent);margin-bottom:8px}
 .intro .tips li{font-size:13px;line-height:1.8;color:#64748b;margin-left:16px}
-.btn-start{display:inline-block;padding:14px 48px;background:linear-gradient(135deg,var(--accent),#ff8c42);color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:600;cursor:pointer;box-shadow:0 4px 15px rgba(255,107,53,.4);transition:all .3s}
+.btn-start{display:inline-block;padding:14px 48px;background:linear-gradient(135deg,var(--accent),#ff8c42);color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:600;cursor:pointer;box-shadow:0 4px 15px rgba(255,107,53,.4);transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .btn-start:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,53,.5)}
 .btn-start:active{transform:translateY(0)}
 .hidden{display:none!important}
@@ -35,7 +35,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .question-text{font-size:17px;font-weight:600;line-height:1.6;margin-bottom:20px}
 .options{display:flex;flex-direction:column;gap:10px}
-.option{padding:14px 18px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .25s;font-size:15px;line-height:1.5;display:flex;align-items:flex-start;gap:10px}
+.option{padding:14px 18px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .25s;font-size:15px;line-height:1.5;display:flex;align-items:flex-start;gap:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .option:hover{border-color:var(--accent);background:#fff8f0}
 .option.selected{border-color:var(--accent);background:linear-gradient(135deg,#fff5f0,#fff);box-shadow:0 2px 8px rgba(255,107,53,.15)}
 .option .opt-marker{min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:#f1f5f9;color:#64748b;transition:all .25s;flex-shrink:0}
@@ -58,7 +58,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .radar-box h3{font-size:15px;margin-bottom:12px;color:var(--text)}
 .radar-box canvas{max-width:100%;margin:0 auto}
 .share-tip{background:var(--card);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shadow);margin-bottom:20px;font-size:13px;color:#64748b;line-height:1.8}
-.share-tip .btn-retry{display:inline-block;padding:10px 30px;background:linear-gradient(135deg,var(--accent2),#38b2ac);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;box-shadow:0 4px 12px rgba(78,205,196,.3)}
+.share-tip .btn-retry{display:inline-block;padding:10px 30px;background:linear-gradient(135deg,var(--accent2),#38b2ac);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;box-shadow:0 4px 12px rgba(78,205,196,.3);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 </style>
 </head>
 <body>
@@ -79,7 +79,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 <li>适合 <strong>6-12岁</strong> 儿童的家长填写</li>
 </ul>
 </div>
-<button class="btn-start" onclick="startQuiz()">开始测评 →</button>
+<button class="btn-start" id="btnStart">开始测评 →</button>
 </div>
 <div id="quizSection" class="hidden">
 <div class="progress-bar">
@@ -179,10 +179,15 @@ box.innerHTML=`
 <div class="question-card">
 <div class="category-tag" style="background:${cat.color}15;color:${cat.color}">${cat.icon} ${cat.name}</div>
 <div class="question-text">${q.q}</div>
-<div class="options">
-${q.opts.map((o,i)=>`<div class="option${answers[currentQ]===i?' selected':''}" onclick="selectOpt(${i})">
+<div class="options" id="optsList">
+${q.opts.map((o,i)=>`<div class="option${answers[currentQ]===i?' selected':''}" data-idx="${i}">
 <div class="opt-marker">${'ABCD'[i]}</div><span>${o}</span></div>`).join('')}
 </div></div>`;
+document.getElementById('optsList').addEventListener('click',function(e){
+const opt=e.target.closest('.option');
+if(!opt)return;
+selectOpt(parseInt(opt.dataset.idx));
+});
 // Auto-scroll to top of question
 box.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -242,10 +247,12 @@ ${cardsHTML}
 <p>💡 <strong>温馨提示</strong></p>
 <p>本测评仅供参考，旨在帮助家长发现孩子的兴趣倾向。每个孩子都是独特的，分数高低不代表优劣，关键在于<strong>因材施教、扬长补短</strong>。</p>
 <p style="margin-top:8px">建议在孩子放松自然的状态下观察，结果更准确。</p>
-<button class="btn-retry" onclick="retryQuiz()">🔄 重新测评</button>
+<button class="btn-retry" id="btnRetry">🔄 重新测评</button>
 </div>`;
 // Draw radar chart
 setTimeout(()=>drawRadar(pcts),100);
+// Bind retry button
+document.getElementById('btnRetry').addEventListener('click',retryQuiz);
 window.scrollTo({top:0,behavior:'smooth'});
 }
 function retryQuiz(){
@@ -305,6 +312,8 @@ ctx.font='10px sans-serif';ctx.fillStyle='#64748b';
 ctx.fillText(pcts[i]+'分',lx,ly+8);
 }
 }
+// Bind start button
+document.getElementById('btnStart').addEventListener('click',startQuiz);
 </script>
 </body>
 </html>
