@@ -280,25 +280,49 @@ var resultEl=document.getElementById('resultSection');
 btnSS.style.display='none';
 hint.style.display='block';
 hint.textContent='⏳ 正在生成长截图，请稍候...';
+
+// Save original radar canvas and create HD version
+var origCanvas=document.getElementById('radarCanvas');
+var origW=origCanvas.width, origH=origCanvas.height;
+var hdCanvas=document.createElement('canvas');
+var hdScale=3;
+hdCanvas.width=origW*hdScale;
+hdCanvas.height=origH*hdScale;
+var hdCtx=hdCanvas.getContext('2d');
+hdCtx.drawImage(origCanvas,0,0,hdCanvas.width,hdCanvas.height);
+origCanvas.width=origW*hdScale;
+origCanvas.height=origH*hdScale;
+var tCtx=origCanvas.getContext('2d');
+tCtx.drawImage(hdCanvas,0,0);
+
 html2canvas(resultEl,{
-scale:2,
+scale:4,
 useCORS:true,
 backgroundColor:'#fef7f0',
 logging:false,
+width:resultEl.scrollWidth,
 onclone:function(doc){
 var cloned=doc.getElementById('resultSection');
 cloned.style.padding='20px';
 }
 }).then(function(canvas){
+// Restore original canvas size
+origCanvas.width=origW;
+origCanvas.height=origH;
+drawRadarOnCanvas(origCanvas);
+
 btnSS.style.display='inline-block';
 hint.style.display='none';
 var link=document.createElement('a');
 link.download='儿童天赋测评结果.png';
-link.href=canvas.toDataURL('image/png');
+link.href=canvas.toDataURL('image/png',1.0);
 document.body.appendChild(link);
 link.click();
 document.body.removeChild(link);
 }).catch(function(err){
+origCanvas.width=origW;
+origCanvas.height=origH;
+drawRadarOnCanvas(origCanvas);
 btnSS.style.display='inline-block';
 hint.textContent='❌ 截图失败，请长按屏幕手动截屏';
 hint.style.display='block';
@@ -306,11 +330,20 @@ setTimeout(function(){hint.style.display='none';},3000);
 });
 }
 
+var _lastPcts=null;
+
 function drawRadar(pcts){
+_lastPcts=pcts;
 var canvas=document.getElementById('radarCanvas');
 if(!canvas) return;
+drawRadarOnCanvas(canvas,pcts);
+}
+
+function drawRadarOnCanvas(canvas,pcts){
+if(!pcts) pcts=_lastPcts;
+if(!pcts||!canvas) return;
 var ctx=canvas.getContext('2d');
-var W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=130;
+var W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=Math.min(W,H)*0.38;
 var n=categories.length;
 for(var ring=5;ring>=1;ring--){
 ctx.beginPath();
@@ -347,11 +380,11 @@ var pr=R*Math.max(pcts[pi],5)/100;
 var px=cx+pr*Math.cos(pa),py=cy+pr*Math.sin(pa);
 ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fillStyle=categories[pi].color;ctx.fill();
 ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
-var lx=cx+(R+22)*Math.cos(pa),ly=cy+(R+22)*Math.sin(pa);
-ctx.font='bold 12px sans-serif';ctx.fillStyle=categories[pi].color;ctx.textAlign='center';ctx.textBaseline='middle';
-ctx.fillText(categories[pi].icon,lx,ly-8);
-ctx.font='10px sans-serif';ctx.fillStyle='#64748b';
-ctx.fillText(pcts[pi]+'分',lx,ly+8);
+var lx=cx+(R+R*0.17)*Math.cos(pa),ly=cy+(R+R*0.17)*Math.sin(pa);
+ctx.font='bold '+Math.round(R*0.09)+'px sans-serif';ctx.fillStyle=categories[pi].color;ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillText(categories[pi].icon,lx,ly-R*0.06);
+ctx.font=Math.round(R*0.077)+'px sans-serif';ctx.fillStyle='#64748b';
+ctx.fillText(pcts[pi]+'分',lx,ly+R*0.06);
 }
 }
 
