@@ -1,345 +1,317 @@
-     1|<!DOCTYPE html>
-     2|<html lang="zh-CN">
-     3|<head>
-     4|<meta charset="UTF-8">
-     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
-     6|<title>儿童天赋发现器 - 发现孩子的闪光点</title>
-     7|<style>
-     8|*{margin:0;padding:0;box-sizing:border-box}
-     9|:root{--bg:#fef7f0;--card:#fff;--accent:#ff6b35;--accent2:#4ecdc4;--accent3:#a855f7;--text:#2d3748;--light:#f7fafc;--border:#e2e8f0;--shadow:0 4px 20px rgba(0,0,0,.08)}
-    10|body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-    11|.header{text-align:center;padding:30px 20px 20px;background:linear-gradient(135deg,#ff6b35 0%,#ff8c42 50%,#feca57 100%);color:#fff;position:relative;overflow:hidden}
-    12|.header::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:20px;background:var(--bg);border-radius:50% 50% 0 0}
-    13|.header h1{font-size:26px;margin-bottom:6px;text-shadow:0 2px 4px rgba(0,0,0,.1)}
-    14|.header p{font-size:14px;opacity:.9}
-    15|.app{max-width:680px;margin:0 auto;padding:16px}
-    16|.intro{background:var(--card);border-radius:16px;padding:28px 24px;box-shadow:var(--shadow);text-align:center;margin-bottom:20px}
-    17|.intro h2{font-size:20px;margin-bottom:12px;color:var(--accent)}
-    18|.intro p{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:16px}
-    19|.intro .tips{background:#fff8f0;border-radius:12px;padding:16px;text-align:left;margin:16px 0}
-    20|.intro .tips h3{font-size:14px;color:var(--accent);margin-bottom:8px}
-    21|.intro .tips li{font-size:13px;line-height:1.8;color:#64748b;margin-left:16px}
-    22|.btn-start{display:inline-block;padding:14px 48px;background:linear-gradient(135deg,var(--accent),#ff8c42);color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:600;cursor:pointer;box-shadow:0 4px 15px rgba(255,107,53,.4);transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-    23|.btn-start:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,53,.5)}
-    24|.btn-start:active{transform:translateY(0)}
-    25|.hidden{display:none!important}
-    26|/* Progress */
-    27|.progress-bar{background:var(--card);border-radius:16px;padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
-    28|.progress-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;color:#94a3b8}
-    29|.progress-track{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
-    30|.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s ease}
-    31|/* Category indicator */
-    32|.category-tag{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:12px}
-    33|/* Question card */
-    34|.question-card{background:var(--card);border-radius:16px;padding:24px 20px;box-shadow:var(--shadow);margin-bottom:16px;animation:fadeUp .4s ease}
-    35|@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    36|.question-text{font-size:17px;font-weight:600;line-height:1.6;margin-bottom:20px}
-    37|.options{display:flex;flex-direction:column;gap:10px}
-    38|.option{padding:14px 18px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .25s;font-size:15px;line-height:1.5;display:flex;align-items:flex-start;gap:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-    39|.option:hover{border-color:var(--accent);background:#fff8f0}
-    40|.option.selected{border-color:var(--accent);background:linear-gradient(135deg,#fff5f0,#fff);box-shadow:0 2px 8px rgba(255,107,53,.15)}
-    41|.option .opt-marker{min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:#f1f5f9;color:#64748b;transition:all .25s;flex-shrink:0}
-    42|.option.selected .opt-marker{background:var(--accent);color:#fff}
-    43|/* Results */
-    44|.result-section{animation:fadeUp .6s ease}
-    45|.result-header{background:linear-gradient(135deg,#ff6b35,#a855f7);border-radius:16px;padding:28px 24px;color:#fff;text-align:center;margin-bottom:20px;box-shadow:0 4px 20px rgba(168,85,247,.3)}
-    46|.result-header h2{font-size:22px;margin-bottom:6px}
-    47|.result-header p{font-size:14px;opacity:.9}
-    48|.talent-card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow);border-left:4px solid var(--accent)}
-    49|.talent-card .rank{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;color:#fff;margin-bottom:8px}
-    50|.talent-card h3{font-size:17px;margin-bottom:6px}
-    51|.talent-card .score-bar{height:8px;background:#f1f5f9;border-radius:4px;margin:10px 0;overflow:hidden}
-    52|.talent-card .score-fill{height:100%;border-radius:4px;transition:width 1s ease}
-    53|.talent-card .desc{font-size:13px;line-height:1.7;color:#64748b;margin-top:8px}
-    54|.talent-card .advice{background:#f8fafc;border-radius:8px;padding:12px;margin-top:10px;font-size:13px;line-height:1.7;color:#475569}
-    55|.talent-card .advice strong{color:var(--accent)}
-    56|/* Radar chart placeholder */
-    57|.radar-box{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);text-align:center}
-    58|.radar-box h3{font-size:15px;margin-bottom:12px;color:var(--text)}
-    59|.radar-box canvas{max-width:100%;margin:0 auto}
-    60|.share-tip{background:var(--card);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shadow);margin-bottom:20px;font-size:13px;color:#64748b;line-height:1.8}
-    61|.share-tip .btn-retry{display:inline-block;padding:10px 30px;background:linear-gradient(135deg,var(--accent2),#38b2ac);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;box-shadow:0 4px 12px rgba(78,205,196,.3);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-    62|</style>
-    63|</head>
-    64|<body>
-    65|<div class="header">
-    66|<h1>🌟 儿童天赋发现器</h1>
-    67|<p>科学测评 · 发现孩子的闪光点 · 因材施教</p>
-    68|</div>
-    69|<div class="app">
-    70|<div id="introSection" class="intro">
-    71|<h2>每个孩子都是独一无二的</h2>
-    72|<p>本测评基于哈佛大学心理学家霍华德·加德纳的<strong>多元智能理论</strong>，从8个维度评估孩子的天赋倾向，帮助家长发现孩子的潜能和优势领域。</p>
-    73|<div class="tips">
-    74|<h3>📌 填写说明</h3>
-    75|<ul>
-    76|<li>根据孩子<strong>日常真实表现</strong>选择最符合的选项</li>
-    77|<li>没有"标准答案"，请如实选择</li>
-    78|<li>共 <strong>32</strong> 道题，约需 <strong>5-8</strong> 分钟</li>
-    79|<li>适合 <strong>6-12岁</strong> 儿童的家长填写</li>
-    80|</ul>
-    81|</div>
-    82|<button class="btn-start" id="btnStart">开始测评 →</button>
-    83|</div>
-    84|<div id="quizSection" class="hidden">
-    85|<div class="progress-bar">
-    86|<div class="progress-info"><span id="progressText">第 1/32 题</span><span id="progressPct">0%</span></div>
-    87|<div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    88|</div>
-    89|<div id="questionBox"></div>
-    90|</div>
-    91|<div id="resultSection" class="hidden result-section"></div>
-    92|</div>
-    93|<script>
-    94|const categories=[
-    95|{id:'linguistic',name:'语言智能',color:'#ff6b35',icon:'📝',desc:'对文字、语言的敏感度和运用能力',
-    96|advice:'鼓励孩子多阅读、写日记、讲故事。可以参加朗诵、演讲、辩论等活动，培养语言表达力。',
-    97|careers:'作家、记者、律师、教师、翻译、主持人'},
-    98|{id:'logical',name:'逻辑数学智能',color:'#4ecdc4',icon:'🔢',desc:'逻辑推理、数学运算和问题分析能力',
-    99|advice:'提供益智游戏（数独、棋类）、科学实验套件。鼓励孩子提问"为什么"，培养探究精神。',
-   100|careers:'科学家、程序员、工程师、数学家、分析师、医生'},
-   101|{id:'spatial',name:'空间视觉智能',color:'#a855f7',icon:'🎨',desc:'对空间、色彩、形状的感知和想象力',
-   102|advice:'提供绘画、拼图、积木、乐高、3D建模等活动。参观美术馆，培养审美和空间想象力。',
-   103|careers:'建筑师、设计师、画家、摄影师、工程师、动画师'},
-   104|{id:'musical',name:'音乐智能',color:'#ec4899',icon:'🎵',desc:'对音调、节奏、旋律的感知和表现能力',
-   105|advice:'让孩子接触不同类型的音乐，考虑学习一种乐器。参加合唱团、音乐培训班等。',
-   106|careers:'音乐家、歌手、作曲家、指挥家、音乐教师、DJ'},
-   107|{id:'bodily',name:'身体运动智能',color:'#22c55e',icon:'⚽',desc:'身体协调性、运动能力和动手操作能力',
-   108|advice:'多参加体育运动、舞蹈、武术等。也可以尝试手工、模型制作等精细操作活动。',
-   109|careers:'运动员、舞者、外科医生、手工艺人、消防员、演员'},
-   110|{id:'interpersonal',name:'人际交往智能',color:'#3b82f6',icon:'🤝',desc:'理解他人、沟通协调和团队合作能力',
-   111|advice:'鼓励参加团队活动、社团组织。培养同理心，让孩子在合作中学习领导与沟通。',
-   112|careers:'教师、心理咨询师、销售、管理者、政治家、社工'},
-   113|{id:'intrapersonal',name:'自我认知智能',color:'#f59e0b',icon:'🧘',desc:'自我反省、独立思考和情绪管理能力',
-   114|advice:'给孩子独处和思考的空间。鼓励写日记、设立个人目标，培养自律和自我驱动能力。',
-   115|careers:'哲学家、作家、心理学家、创业者、研究员、导演'},
-   116|{id:'naturalist',name:'自然观察智能',color:'#10b981',icon:'🌿',desc:'对自然界、动植物的观察和分类能力',
-   117|advice:'多带孩子接触大自然——逛公园、种花养虫、观察天气变化。可以参加自然探索营。',
-   118|careers:'生物学家、环保工作者、兽医、农民、地质学家、天文学家'}
-   119|];
-   120|const questions=[
-   121|// Linguistic (4)
-   122|{cat:0,q:'孩子喜欢听故事、讲故事，而且讲得很有条理？',opts:['几乎不','偶尔会','经常这样','非常明显']},
-   123|{cat:0,q:'孩子认识的汉字/词汇量比同龄人明显更多？',opts:['差不多','稍多一点','明显更多','丰富很多']},
-   124|{cat:0,q:'孩子能清楚地表达自己的想法和感受？',opts:['比较困难','基本可以','表达清晰','非常出色']},
-   125|{cat:0,q:'孩子喜欢看书、认字，对文字内容很感兴趣？',opts:['不太感兴趣','偶尔看看','比较喜欢','非常热爱']},
-   126|// Logical (4)
-   127|{cat:1,q:'孩子对数字很敏感，喜欢数数或做简单计算？',opts:['不太感兴趣','偶尔','比较喜欢','非常着迷']},
-   128|{cat:1,q:'孩子喜欢问"为什么"，喜欢探究事物的因果关系？',opts:['很少问','偶尔问','经常问','十万个为什么']},
-   129|{cat:1,q:'孩子能较快理解分类、排序等逻辑概念？',opts:['比较吃力','需要引导','理解较快','一点就通']},
-   130|{cat:1,q:'孩子喜欢玩棋类、谜题等需要动脑筋的游戏？',opts:['不太喜欢','偶尔玩','比较喜欢','非常热爱']},
-   131|// Spatial (4)
-   132|{cat:2,q:'孩子喜欢画画，画的画比较出色或有创意？',opts:['不太喜欢','偶尔画画','画得不错','很有天赋']},
-   133|{cat:2,q:'孩子擅长拼图、搭积木、玩乐高等空间类游戏？',opts:['不太擅长','一般般','比较擅长','非常厉害']},
-   134|{cat:2,q:'孩子对颜色搭配、形状构造有很好的感觉？',opts:['不太关注','有一定感觉','感觉不错','非常敏锐']},
-   135|{cat:2,q:'孩子能很好地辨认方向，不容易迷路？',opts:['容易迷路','基本可以','方向感不错','人肉导航仪']},
-   136|// Musical (4)
-   137|{cat:3,q:'孩子听到音乐时会自然地跟着哼唱或打节拍？',opts:['没什么反应','偶尔会','经常这样','节奏感很强']},
-   138|{cat:3,q:'孩子能辨别不同的乐器声音或音调的高低？',opts:['不太能','部分能','大部分能','非常敏锐']},
-   139|{cat:3,q:'孩子学习歌曲很快，旋律记得很准？',opts:['比较慢','一般速度','学得较快','听几遍就会']},
-   140|{cat:3,q:'孩子对某种乐器表现出浓厚兴趣或正在学习？',opts:['没兴趣','有一点','比较有兴趣','非常热爱']},
-   141|// Bodily (4)
-   142|{cat:4,q:'孩子跑跳攀爬等大运动能力比同龄人强？',opts:['偏弱','差不多','比较强','明显突出']},
-   143|{cat:4,q:'孩子手部精细动作好（写字、剪纸、手工等）？',opts:['不太灵活','一般','比较灵巧','非常灵活']},
-   144|{cat:4,q:'孩子喜欢体育运动，精力充沛、好动？',opts:['比较安静','一般','比较活跃','精力旺盛']},
-   145|{cat:4,q:'孩子学动作很快，模仿能力很强？',opts:['比较慢','一般','学得快','一学就会']},
-   146|// Interpersonal (4)
-   147|{cat:5,q:'孩子善于交朋友，在同伴中比较受欢迎？',opts:['比较内向','几个朋友','朋友较多','社交达人']},
-   148|{cat:5,q:'孩子能察觉别人的情绪变化，有同理心？',opts:['不太注意','偶尔能','比较敏感','非常体贴']},
-   149|{cat:5,q:'孩子在团队活动中喜欢组织、协调、带领别人？',opts:['跟随者','偶尔组织','经常组织','天生的领导']},
-   150|{cat:5,q:'孩子能较好地处理与同伴的矛盾和冲突？',opts:['容易冲突','需要帮助','基本能处理','处理得很好']},
-   151|// Intrapersonal (4)
-   152|{cat:6,q:'孩子有自己的主见和想法，不随波逐流？',opts:['容易从众','偶尔有','比较有主见','非常有主见']},
-   153|{cat:6,q:'孩子能独立完成事情，不太需要大人督促？',opts:['需要督促','偶尔可以','比较独立','非常自律']},
-   154|{cat:6,q:'孩子对自己的优缺点有一定认识？',opts:['不太清楚','模糊认识','比较了解','非常清楚']},
-   155|{cat:6,q:'孩子喜欢独处做自己的事情，享受一个人玩？',opts:['不喜欢','偶尔','比较喜欢','很享受独处']},
-   156|// Naturalist (4)
-   157|{cat:7,q:'孩子对花草树木、小动物很感兴趣？',opts:['不太关注','有一点','比较感兴趣','非常着迷']},
-   158|{cat:7,q:'孩子喜欢户外活动，在大自然中特别开心？',opts:['更喜欢室内','都可以','比较喜欢','非常热爱']},
-   159|{cat:7,q:'孩子善于观察自然界的小细节（虫子、云的形状等）？',opts:['不太注意','偶尔','经常观察','观察力惊人']},
-   160|{cat:7,q:'孩子能认出很多种动植物，或喜欢收集石头、贝壳等？',opts:['不太感兴趣','收集一点','收集较多','小博物学家']}
-   161|];
-   162|
-   163|let currentQ=0,answers=[];
-   164|function startQuiz(){
-   165|currentQ=0;answers=new Array(questions.length).fill(-1);
-   166|document.getElementById('introSection').classList.add('hidden');
-   167|document.getElementById('quizSection').classList.remove('hidden');
-   168|showQuestion();
-   169|}
-   170|function showQuestion(){
-   171|const q=questions[currentQ],cat=categories[q.cat];
-   172|const total=questions.length;
-   173|const pct=Math.round((currentQ/total)*100);
-   174|document.getElementById('progressText').textContent=`第 ${currentQ+1}/${total} 题`;
-   175|document.getElementById('progressPct').textContent=pct+'%';
-   176|document.getElementById('progressFill').style.width=pct+'%';
-   177|const box=document.getElementById('questionBox');
-   178|box.innerHTML=`
-   179|<div class="question-card">
-   180|<div class="category-tag" style="background:${cat.color}15;color:${cat.color}">${cat.icon} ${cat.name}</div>
-   181|<div class="question-text">${q.q}</div>
-   182|<div class="options" id="optsList">
-   183|${q.opts.map((o,i)=>`<div class="option${answers[currentQ]===i?' selected':''}" data-idx="${i}">
-   184|<div class="opt-marker">${'ABCD'[i]}</div><span>${o}</span></div>`).join('')}
-   185|</div></div>`;
-   186|document.getElementById('optsList').addEventListener('click',function(e){
-   187|const opt=e.target.closest('.option');
-   188|if(!opt)return;
-   189|selectOpt(parseInt(opt.dataset.idx));
-   190|});
-   191|document.getElementById('optsList').addEventListener('touchend',function(e){
-   192|const opt=e.target.closest('.option');
-   193|if(!opt)return;
-   194|e.preventDefault();
-   195|selectOpt(parseInt(opt.dataset.idx));
-   196|});
-   197|// Auto-scroll to top of question
-   198|box.scrollIntoView({behavior:'smooth',block:'start'});
-   199|}
-   200|function selectOpt(i){
-   201|answers[currentQ]=i;
-   202|const opts=document.querySelectorAll('.option');
-   203|opts.forEach((o,j)=>{o.classList.toggle('selected',j===i)});
-   204|setTimeout(()=>{currentQ<questions.length-1?nextQ():showResults()},350);
-   205|}
-   206|function nextQ(){currentQ++;showQuestion()}
-   207|function showResults(){
-   208|document.getElementById('quizSection').classList.add('hidden');
-   209|document.getElementById('resultSection').classList.remove('hidden');
-   210|// Calculate scores per category
-   211|const scores=categories.map(()=>0);
-   212|const counts=categories.map(()=>0);
-   213|answers.forEach((a,qi)=>{
-   214|const cat=questions[qi].cat;
-   215|counts[cat]++;
-   216|if(a===0)scores[cat]+=1;
-   217|else if(a===1)scores[cat]+=2;
-   218|else if(a===2)scores[cat]+=3;
-   219|else if(a===3)scores[cat]+=4;
-   220|});
-   221|const pcts=categories.map((_,i)=>Math.round((scores[i]/(counts[i]*4))*100));
-   222|const sorted=categories.map((c,i)=>({...c,score:pcts[i],raw:scores[i]})).sort((a,b)=>b.score-a.score);
-   223|// Draw radar
-   224|const radarHTML=`<div class="radar-box"><h3>📊 天赋雷达图</h3><canvas id="radarCanvas" width="340" height="340"></canvas></div>`;
-   225|// Build talent cards
-   226|let cardsHTML='';
-   227|sorted.forEach((c,i)=>{
-   228|const topTag=i<3?'🏆 Top'+(i+1):'';
-   229|const barColor=c.score>=70?'linear-gradient(90deg,#22c55e,#10b981)':c.score>=50?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#94a3b8,#cbd5e1)';
-   230|cardsHTML+=`<div class="talent-card" style="border-left-color:${c.color};animation-delay:${i*0.1}s">
-   231|<div class="rank" style="background:${c.color}">${c.icon} ${topTag||'第'+(i+1)+'名'}</div>
-   232|<h3>${c.name}</h3>
-   233|<div class="score-bar"><div class="score-fill" style="width:${c.score}%;background:${barColor}"></div></div>
-   234|<span style="font-size:13px;color:#64748b">得分：<strong style="color:${c.color}">${c.score}</strong>/100 · ${c.desc}</span>
-   235|<div class="advice"><strong>💡 培养建议：</strong>${c.advice}<br><strong>🎯 未来方向：</strong>${c.careers}</div>
-   236|</div>`;
-   237|});
-   238|// Summary
-   239|const top3=sorted.slice(0,3);
-   240|const summaryText=`根据测评结果，孩子的<strong>前三大天赋优势</strong>是：<strong style="color:${top3[0].color}">${top3[0].icon} ${top3[0].name}</strong>（${top3[0].score}分）、<strong style="color:${top3[1].color}">${top3[1].icon} ${top3[1].name}</strong>（${top3[1].score}分）、<strong style="color:${top3[2].color}">${top3[2].icon} ${top3[2].name}</strong>（${top3[2].score}分）。
-   241|
-   242|建议重点培养前三项天赋，同时关注较弱领域的适度发展。每个孩子都有自己的节奏，最重要的是<strong>尊重兴趣、快乐成长</strong>。`;
-   243|document.getElementById('resultSection').innerHTML=`
-   244|<div class="result-header"><h2>🎉 测评结果出来了！</h2><p>基于多元智能理论 · 8大维度分析</p></div>
-   245|${radarHTML}
-   246|<div class="talent-card" style="border-left-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff)">
-   247|<div class="rank" style="background:linear-gradient(135deg,#ff6b35,#a855f7)">📋 综合分析</div>
-   248|<div class="advice" style="background:transparent;line-height:2;font-size:14px">${summaryText}</div>
-   249|</div>
-   250|<h3 style="text-align:center;margin:20px 0 10px;font-size:16px;color:#64748b">📊 各维度详细评分</h3>
-   251|${cardsHTML}
-   252|<div class="share-tip">
-   253|<p>💡 <strong>温馨提示</strong></p>
-   254|<p>本测评仅供参考，旨在帮助家长发现孩子的兴趣倾向。每个孩子都是独特的，分数高低不代表优劣，关键在于<strong>因材施教、扬长补短</strong>。</p>
-   255|<p style="margin-top:8px">建议在孩子放松自然的状态下观察，结果更准确。</p>
-   256|<button class="btn-retry" id="btnRetry">🔄 重新测评</button>
-   257|</div>`;
-   258|// Draw radar chart
-   259|setTimeout(()=>drawRadar(pcts),100);
-   260|// Bind retry button
-   261|(function(){
-   262|var btn=document.getElementById('btnRetry');
-   263|var fired=false;
-   264|function go(e){
-   265|if(fired)return;fired=true;
-   266|e.preventDefault();
-   267|retryQuiz();
-   268|}
-   269|btn.addEventListener('touchend',go,false);
-   270|btn.addEventListener('click',go,false);
-   271|})();
-   272|window.scrollTo({top:0,behavior:'smooth'});
-   273|}
-   274|function retryQuiz(){
-   275|document.getElementById('resultSection').classList.add('hidden');
-   276|document.getElementById('introSection').classList.remove('hidden');
-   277|}
-   278|function drawRadar(pcts){
-   279|const canvas=document.getElementById('radarCanvas');
-   280|if(!canvas)return;
-   281|const ctx=canvas.getContext('2d');
-   282|const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=130;
-   283|const n=categories.length;
-   284|// Background rings
-   285|for(let ring=5;ring>=1;ring--){
-   286|ctx.beginPath();
-   287|const r=R*ring/5;
-   288|for(let i=0;i<n;i++){
-   289|const angle=Math.PI*2*i/n-Math.PI/2;
-   290|const x=cx+r*Math.cos(angle),y=cy+r*Math.sin(angle);
-   291|i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-   292|}
-   293|ctx.closePath();ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.stroke();
-   294|if(ring===5){ctx.fillStyle='#f8fafc';ctx.fill()}
-   295|}
-   296|// Axes
-   297|for(let i=0;i<n;i++){
-   298|const angle=Math.PI*2*i/n-Math.PI/2;
-   299|ctx.beginPath();ctx.moveTo(cx,cy);
-   300|ctx.lineTo(cx+R*Math.cos(angle),cy+R*Math.sin(angle));
-   301|ctx.strokeStyle='#e2e8f0';ctx.stroke();
-   302|}
-   303|// Data polygon
-   304|ctx.beginPath();
-   305|for(let i=0;i<n;i++){
-   306|const angle=Math.PI*2*i/n-Math.PI/2;
-   307|const r=R*Math.max(pcts[i],5)/100;
-   308|const x=cx+r*Math.cos(angle),y=cy+r*Math.sin(angle);
-   309|i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-   310|}
-   311|ctx.closePath();
-   312|const grad=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
-   313|grad.addColorStop(0,'rgba(255,107,53,0.25)');grad.addColorStop(1,'rgba(78,205,196,0.25)');
-   314|ctx.fillStyle=grad;ctx.fill();
-   315|ctx.strokeStyle='rgba(255,107,53,0.8)';ctx.lineWidth=2.5;ctx.stroke();
-   316|// Data points & labels
-   317|for(let i=0;i<n;i++){
-   318|const angle=Math.PI*2*i/n-Math.PI/2;
-   319|const r=R*Math.max(pcts[i],5)/100;
-   320|const x=cx+r*Math.cos(angle),y=cy+r*Math.sin(angle);
-   321|ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=categories[i].color;ctx.fill();
-   322|ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
-   323|// Labels
-   324|const lx=cx+(R+22)*Math.cos(angle),ly=cy+(R+22)*Math.sin(angle);
-   325|ctx.font='bold 12px sans-serif';ctx.fillStyle=categories[i].color;ctx.textAlign='center';ctx.textBaseline='middle';
-   326|ctx.fillText(categories[i].icon,lx,ly-8);
-   327|ctx.font='10px sans-serif';ctx.fillStyle='#64748b';
-   328|ctx.fillText(pcts[i]+'分',lx,ly+8);
-   329|}
-   330|}
-   331|// Bind start button - use both click and touchend for iOS Safari
-   332|(function(){
-   333|var btn=document.getElementById('btnStart');
-   334|var fired=false;
-   335|function go(e){
-   336|if(fired)return;fired=true;
-   337|e.preventDefault();e.stopPropagation();
-   338|startQuiz();
-   339|}
-   340|btn.addEventListener('touchend',go,false);
-   341|btn.addEventListener('click',go,false);
-   342|})();
-   343|</script>
-   344|</body>
-   345|</html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>儿童天赋发现器 - 发现孩子的闪光点</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#fef7f0;--card:#fff;--accent:#ff6b35;--accent2:#4ecdc4;--accent3:#a855f7;--text:#2d3748;--light:#f7fafc;--border:#e2e8f0;--shadow:0 4px 20px rgba(0,0,0,.08)}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.header{text-align:center;padding:30px 20px 20px;background:linear-gradient(135deg,#ff6b35 0%,#ff8c42 50%,#feca57 100%);color:#fff;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:20px;background:var(--bg);border-radius:50% 50% 0 0}
+.header h1{font-size:26px;margin-bottom:6px;text-shadow:0 2px 4px rgba(0,0,0,.1)}
+.header p{font-size:14px;opacity:.9}
+.app{max-width:680px;margin:0 auto;padding:16px}
+.intro{background:var(--card);border-radius:16px;padding:28px 24px;box-shadow:var(--shadow);text-align:center;margin-bottom:20px}
+.intro h2{font-size:20px;margin-bottom:12px;color:var(--accent)}
+.intro p{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:16px}
+.intro .tips{background:#fff8f0;border-radius:12px;padding:16px;text-align:left;margin:16px 0}
+.intro .tips h3{font-size:14px;color:var(--accent);margin-bottom:8px}
+.intro .tips li{font-size:13px;line-height:1.8;color:#64748b;margin-left:16px}
+.btn-start{display:inline-block;padding:14px 48px;background:linear-gradient(135deg,var(--accent),#ff8c42);color:#fff;border:none;border-radius:50px;font-size:18px;font-weight:600;cursor:pointer;box-shadow:0 4px 15px rgba(255,107,53,.4);transition:all .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,53,.5)}
+.btn-start:active{transform:translateY(0)}
+.hidden{display:none!important}
+.progress-bar{background:var(--card);border-radius:16px;padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.progress-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;color:#94a3b8}
+.progress-track{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s ease}
+.category-tag{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:12px}
+.question-card{background:var(--card);border-radius:16px;padding:24px 20px;box-shadow:var(--shadow);margin-bottom:16px;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.question-text{font-size:17px;font-weight:600;line-height:1.6;margin-bottom:20px}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:14px 18px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .25s;font-size:15px;line-height:1.5;display:flex;align-items:flex-start;gap:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.option:hover{border-color:var(--accent);background:#fff8f0}
+.option.selected{border-color:var(--accent);background:linear-gradient(135deg,#fff5f0,#fff);box-shadow:0 2px 8px rgba(255,107,53,.15)}
+.option .opt-marker{min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:#f1f5f9;color:#64748b;transition:all .25s;flex-shrink:0}
+.option.selected .opt-marker{background:var(--accent);color:#fff}
+.result-section{animation:fadeUp .6s ease}
+.result-header{background:linear-gradient(135deg,#ff6b35,#a855f7);border-radius:16px;padding:28px 24px;color:#fff;text-align:center;margin-bottom:20px;box-shadow:0 4px 20px rgba(168,85,247,.3)}
+.result-header h2{font-size:22px;margin-bottom:6px}
+.result-header p{font-size:14px;opacity:.9}
+.talent-card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow);border-left:4px solid var(--accent)}
+.talent-card .rank{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700;color:#fff;margin-bottom:8px}
+.talent-card h3{font-size:17px;margin-bottom:6px}
+.talent-card .score-bar{height:8px;background:#f1f5f9;border-radius:4px;margin:10px 0;overflow:hidden}
+.talent-card .score-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.talent-card .desc{font-size:13px;line-height:1.7;color:#64748b;margin-top:8px}
+.talent-card .advice{background:#f8fafc;border-radius:8px;padding:12px;margin-top:10px;font-size:13px;line-height:1.7;color:#475569}
+.talent-card .advice strong{color:var(--accent)}
+.radar-box{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);text-align:center}
+.radar-box h3{font-size:15px;margin-bottom:12px;color:var(--text)}
+.radar-box canvas{max-width:100%;margin:0 auto}
+.share-tip{background:var(--card);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shadow);margin-bottom:20px;font-size:13px;color:#64748b;line-height:1.8}
+.share-tip .btn-retry{display:inline-block;padding:10px 30px;background:linear-gradient(135deg,var(--accent2),#38b2ac);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;box-shadow:0 4px 12px rgba(78,205,196,.3);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🌟 儿童天赋发现器</h1>
+<p>科学测评 · 发现孩子的闪光点 · 因材施教</p>
+</div>
+<div class="app">
+<div id="introSection" class="intro">
+<h2>每个孩子都是独一无二的</h2>
+<p>本测评基于哈佛大学心理学家霍华德·加德纳的<strong>多元智能理论</strong>，从8个维度评估孩子的天赋倾向，帮助家长发现孩子的潜能和优势领域。</p>
+<div class="tips">
+<h3>📌 填写说明</h3>
+<ul>
+<li>根据孩子<strong>日常真实表现</strong>选择最符合的选项</li>
+<li>没有"标准答案"，请如实选择</li>
+<li>共 <strong>32</strong> 道题，约需 <strong>5-8</strong> 分钟</li>
+<li>适合 <strong>6-12岁</strong> 儿童的家长填写</li>
+</ul>
+</div>
+<button class="btn-start" id="btnStart">开始测评 →</button>
+</div>
+<div id="quizSection" class="hidden">
+<div class="progress-bar">
+<div class="progress-info"><span id="progressText">第 1/32 题</span><span id="progressPct">0%</span></div>
+<div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+<div id="questionBox"></div>
+</div>
+<div id="resultSection" class="hidden result-section"></div>
+</div>
+<script>
+var categories=[
+{id:'linguistic',name:'语言智能',color:'#ff6b35',icon:'📝',desc:'对文字、语言的敏感度和运用能力',advice:'鼓励孩子多阅读、写日记、讲故事。可以参加朗诵、演讲、辩论等活动，培养语言表达力。',careers:'作家、记者、律师、教师、翻译、主持人'},
+{id:'logical',name:'逻辑数学智能',color:'#4ecdc4',icon:'🔢',desc:'逻辑推理、数学运算和问题分析能力',advice:'提供益智游戏（数独、棋类）、科学实验套件。鼓励孩子提问"为什么"，培养探究精神。',careers:'科学家、程序员、工程师、数学家、分析师、医生'},
+{id:'spatial',name:'空间视觉智能',color:'#a855f7',icon:'🎨',desc:'对空间、色彩、形状的感知和想象力',advice:'提供绘画、拼图、积木、乐高、3D建模等活动。参观美术馆，培养审美和空间想象力。',careers:'建筑师、设计师、画家、摄影师、工程师、动画师'},
+{id:'musical',name:'音乐智能',color:'#ec4899',icon:'🎵',desc:'对音调、节奏、旋律的感知和表现能力',advice:'让孩子接触不同类型的音乐，考虑学习一种乐器。参加合唱团、音乐培训班等。',careers:'音乐家、歌手、作曲家、指挥家、音乐教师、DJ'},
+{id:'bodily',name:'身体运动智能',color:'#22c55e',icon:'⚽',desc:'身体协调性、运动能力和动手操作能力',advice:'多参加体育运动、舞蹈、武术等。也可以尝试手工、模型制作等精细操作活动。',careers:'运动员、舞者、外科医生、手工艺人、消防员、演员'},
+{id:'interpersonal',name:'人际交往智能',color:'#3b82f6',icon:'🤝',desc:'理解他人、沟通协调和团队合作能力',advice:'鼓励参加团队活动、社团组织。培养同理心，让孩子在合作中学习领导与沟通。',careers:'教师、心理咨询师、销售、管理者、政治家、社工'},
+{id:'intrapersonal',name:'自我认知智能',color:'#f59e0b',icon:'🧘',desc:'自我反省、独立思考和情绪管理能力',advice:'给孩子独处和思考的空间。鼓励写日记、设立个人目标，培养自律和自我驱动能力。',careers:'哲学家、作家、心理学家、创业者、研究员、导演'},
+{id:'naturalist',name:'自然观察智能',color:'#10b981',icon:'🌿',desc:'对自然界、动植物的观察和分类能力',advice:'多带孩子接触大自然——逛公园、种花养虫、观察天气变化。可以参加自然探索营。',careers:'生物学家、环保工作者、兽医、农民、地质学家、天文学家'}
+];
+
+var questions=[
+{cat:0,q:'孩子喜欢听故事、讲故事，而且讲得很有条理？',opts:['几乎不','偶尔会','经常这样','非常明显']},
+{cat:0,q:'孩子认识的汉字/词汇量比同龄人明显更多？',opts:['差不多','稍多一点','明显更多','丰富很多']},
+{cat:0,q:'孩子能清楚地表达自己的想法和感受？',opts:['比较困难','基本可以','表达清晰','非常出色']},
+{cat:0,q:'孩子喜欢看书、认字，对文字内容很感兴趣？',opts:['不太感兴趣','偶尔看看','比较喜欢','非常热爱']},
+{cat:1,q:'孩子对数字很敏感，喜欢数数或做简单计算？',opts:['不太感兴趣','偶尔','比较喜欢','非常着迷']},
+{cat:1,q:'孩子喜欢问"为什么"，喜欢探究事物的因果关系？',opts:['很少问','偶尔问','经常问','十万个为什么']},
+{cat:1,q:'孩子能较快理解分类、排序等逻辑概念？',opts:['比较吃力','需要引导','理解较快','一点就通']},
+{cat:1,q:'孩子喜欢玩棋类、谜题等需要动脑筋的游戏？',opts:['不太喜欢','偶尔玩','比较喜欢','非常热爱']},
+{cat:2,q:'孩子喜欢画画，画的画比较出色或有创意？',opts:['不太喜欢','偶尔画画','画得不错','很有天赋']},
+{cat:2,q:'孩子擅长拼图、搭积木、玩乐高等空间类游戏？',opts:['不太擅长','一般般','比较擅长','非常厉害']},
+{cat:2,q:'孩子对颜色搭配、形状构造有很好的感觉？',opts:['不太关注','有一定感觉','感觉不错','非常敏锐']},
+{cat:2,q:'孩子能很好地辨认方向，不容易迷路？',opts:['容易迷路','基本可以','方向感不错','人肉导航仪']},
+{cat:3,q:'孩子听到音乐时会自然地跟着哼唱或打节拍？',opts:['没什么反应','偶尔会','经常这样','节奏感很强']},
+{cat:3,q:'孩子能辨别不同的乐器声音或音调的高低？',opts:['不太能','部分能','大部分能','非常敏锐']},
+{cat:3,q:'孩子学习歌曲很快，旋律记得很准？',opts:['比较慢','一般速度','学得较快','听几遍就会']},
+{cat:3,q:'孩子对某种乐器表现出浓厚兴趣或正在学习？',opts:['没兴趣','有一点','比较有兴趣','非常热爱']},
+{cat:4,q:'孩子跑跳攀爬等大运动能力比同龄人强？',opts:['偏弱','差不多','比较强','明显突出']},
+{cat:4,q:'孩子手部精细动作好（写字、剪纸、手工等）？',opts:['不太灵活','一般','比较灵巧','非常灵活']},
+{cat:4,q:'孩子喜欢体育运动，精力充沛、好动？',opts:['比较安静','一般','比较活跃','精力旺盛']},
+{cat:4,q:'孩子学动作很快，模仿能力很强？',opts:['比较慢','一般','学得快','一学就会']},
+{cat:5,q:'孩子善于交朋友，在同伴中比较受欢迎？',opts:['比较内向','几个朋友','朋友较多','社交达人']},
+{cat:5,q:'孩子能察觉别人的情绪变化，有同理心？',opts:['不太注意','偶尔能','比较敏感','非常体贴']},
+{cat:5,q:'孩子在团队活动中喜欢组织、协调、带领别人？',opts:['跟随者','偶尔组织','经常组织','天生的领导']},
+{cat:5,q:'孩子能较好地处理与同伴的矛盾和冲突？',opts:['容易冲突','需要帮助','基本能处理','处理得很好']},
+{cat:6,q:'孩子有自己的主见和想法，不随波逐流？',opts:['容易从众','偶尔有','比较有主见','非常有主见']},
+{cat:6,q:'孩子能独立完成事情，不太需要大人督促？',opts:['需要督促','偶尔可以','比较独立','非常自律']},
+{cat:6,q:'孩子对自己的优缺点有一定认识？',opts:['不太清楚','模糊认识','比较了解','非常清楚']},
+{cat:6,q:'孩子喜欢独处做自己的事情，享受一个人玩？',opts:['不喜欢','偶尔','比较喜欢','很享受独处']},
+{cat:7,q:'孩子对花草树木、小动物很感兴趣？',opts:['不太关注','有一点','比较感兴趣','非常着迷']},
+{cat:7,q:'孩子喜欢户外活动，在大自然中特别开心？',opts:['更喜欢室内','都可以','比较喜欢','非常热爱']},
+{cat:7,q:'孩子善于观察自然界的小细节（虫子、云的形状等）？',opts:['不太注意','偶尔','经常观察','观察力惊人']},
+{cat:7,q:'孩子能认出很多种动植物，或喜欢收集石头、贝壳等？',opts:['不太感兴趣','收集一点','收集较多','小博物学家']}
+];
+
+var currentQ=0;
+var answers=[];
+
+function startQuiz(){
+currentQ=0;
+answers=[];
+for(var i=0;i<questions.length;i++) answers.push(-1);
+document.getElementById('introSection').classList.add('hidden');
+document.getElementById('quizSection').classList.remove('hidden');
+showQuestion();
+}
+
+function showQuestion(){
+var q=questions[currentQ];
+var cat=categories[q.cat];
+var total=questions.length;
+var pct=Math.round((currentQ/total)*100);
+document.getElementById('progressText').textContent='第 '+(currentQ+1)+'/'+total+' 题';
+document.getElementById('progressPct').textContent=pct+'%';
+document.getElementById('progressFill').style.width=pct+'%';
+var box=document.getElementById('questionBox');
+var html='<div class="question-card">';
+html+='<div class="category-tag" style="background:'+cat.color+'15;color:'+cat.color+'">'+cat.icon+' '+cat.name+'</div>';
+html+='<div class="question-text">'+q.q+'</div>';
+html+='<div class="options" id="optsList">';
+var labels=['A','B','C','D'];
+for(var i=0;i<q.opts.length;i++){
+var sel=answers[currentQ]===i?' selected':'';
+html+='<div class="option'+sel+'" data-idx="'+i+'">';
+html+='<div class="opt-marker">'+labels[i]+'</div><span>'+q.opts[i]+'</span></div>';
+}
+html+='</div></div>';
+box.innerHTML=html;
+
+var optEls=box.querySelectorAll('.option');
+for(var j=0;j<optEls.length;j++){
+optEls[j].addEventListener('click',function(){
+var idx=parseInt(this.getAttribute('data-idx'));
+selectOpt(idx);
+});
+}
+box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function selectOpt(i){
+answers[currentQ]=i;
+var opts=document.querySelectorAll('.option');
+for(var j=0;j<opts.length;j++){
+if(j===i) opts[j].classList.add('selected');
+else opts[j].classList.remove('selected');
+}
+setTimeout(function(){
+if(currentQ<questions.length-1){currentQ++;showQuestion();}
+else showResults();
+},350);
+}
+
+function showResults(){
+document.getElementById('quizSection').classList.add('hidden');
+document.getElementById('resultSection').classList.remove('hidden');
+
+var scores=[];
+var counts=[];
+for(var c=0;c<categories.length;c++){scores.push(0);counts.push(0);}
+
+for(var qi=0;qi<answers.length;qi++){
+var cat=questions[qi].cat;
+counts[cat]++;
+if(answers[qi]===0) scores[cat]+=1;
+else if(answers[qi]===1) scores[cat]+=2;
+else if(answers[qi]===2) scores[cat]+=3;
+else if(answers[qi]===3) scores[cat]+=4;
+}
+
+var pcts=[];
+for(var ci=0;ci<categories.length;ci++){
+pcts.push(Math.round((scores[ci]/(counts[ci]*4))*100));
+}
+
+var sorted=[];
+for(var si=0;si<categories.length;si++){
+sorted.push({id:categories[si].id,name:categories[si].name,color:categories[si].color,icon:categories[si].icon,desc:categories[si].desc,advice:categories[si].advice,careers:categories[si].careers,score:pcts[si]});
+}
+sorted.sort(function(a,b){return b.score-a.score;});
+
+var top3=sorted.slice(0,3);
+var summaryText='根据测评结果，孩子的<strong>前三大天赋优势</strong>是：<strong style="color:'+top3[0].color+'">'+top3[0].icon+' '+top3[0].name+'</strong>（'+top3[0].score+'分）、<strong style="color:'+top3[1].color+'">'+top3[1].icon+' '+top3[1].name+'</strong>（'+top3[1].score+'分）、<strong style="color:'+top3[2].color+'">'+top3[2].icon+' '+top3[2].name+'</strong>（'+top3[2].score+'分）。建议重点培养前三项天赋，同时关注较弱领域的适度发展。每个孩子都有自己的节奏，最重要的是<strong>尊重兴趣、快乐成长</strong>。';
+
+var html='<div class="result-header"><h2>🎉 测评结果出来了！</h2><p>基于多元智能理论 · 8大维度分析</p></div>';
+html+='<div class="radar-box"><h3>📊 天赋雷达图</h3><canvas id="radarCanvas" width="340" height="340"></canvas></div>';
+html+='<div class="talent-card" style="border-left-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff)">';
+html+='<div class="rank" style="background:linear-gradient(135deg,#ff6b35,#a855f7)">📋 综合分析</div>';
+html+='<div class="advice" style="background:transparent;line-height:2;font-size:14px">'+summaryText+'</div></div>';
+html+='<h3 style="text-align:center;margin:20px 0 10px;font-size:16px;color:#64748b">📊 各维度详细评分</h3>';
+
+for(var ri=0;ri<sorted.length;ri++){
+var c=sorted[ri];
+var tag=ri<3?'Top'+(ri+1):'第'+(ri+1)+'名';
+var barColor=c.score>=70?'linear-gradient(90deg,#22c55e,#10b981)':c.score>=50?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#94a3b8,#cbd5e1)';
+html+='<div class="talent-card" style="border-left-color:'+c.color+'">';
+html+='<div class="rank" style="background:'+c.color+'">'+c.icon+' '+tag+'</div>';
+html+='<h3>'+c.name+'</h3>';
+html+='<div class="score-bar"><div class="score-fill" style="width:'+c.score+'%;background:'+barColor+'"></div></div>';
+html+='<span style="font-size:13px;color:#64748b">得分：<strong style="color:'+c.color+'">'+c.score+'</strong>/100 · '+c.desc+'</span>';
+html+='<div class="advice"><strong>💡 培养建议：</strong>'+c.advice+'<br><strong>🎯 未来方向：</strong>'+c.careers+'</div>';
+html+='</div>';
+}
+
+html+='<div class="share-tip">';
+html+='<p>💡 <strong>温馨提示</strong></p>';
+html+='<p>本测评仅供参考，旨在帮助家长发现孩子的兴趣倾向。每个孩子都是独特的，分数高低不代表优劣，关键在于<strong>因材施教、扬长补短</strong>。</p>';
+html+='<p style="margin-top:8px">建议在孩子放松自然的状态下观察，结果更准确。</p>';
+html+='<button class="btn-retry" id="btnRetry">🔄 重新测评</button>';
+html+='</div>';
+
+document.getElementById('resultSection').innerHTML=html;
+
+document.getElementById('btnRetry').addEventListener('click',function(){
+retryQuiz();
+});
+
+setTimeout(function(){drawRadar(pcts);},100);
+window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function retryQuiz(){
+document.getElementById('resultSection').classList.add('hidden');
+document.getElementById('introSection').classList.remove('hidden');
+}
+
+function drawRadar(pcts){
+var canvas=document.getElementById('radarCanvas');
+if(!canvas) return;
+var ctx=canvas.getContext('2d');
+var W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=130;
+var n=categories.length;
+for(var ring=5;ring>=1;ring--){
+ctx.beginPath();
+var r=R*ring/5;
+for(var i=0;i<n;i++){
+var angle=Math.PI*2*i/n-Math.PI/2;
+var x=cx+r*Math.cos(angle),y=cy+r*Math.sin(angle);
+if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+}
+ctx.closePath();ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.stroke();
+if(ring===5){ctx.fillStyle='#f8fafc';ctx.fill();}
+}
+for(var ai=0;ai<n;ai++){
+var a=Math.PI*2*ai/n-Math.PI/2;
+ctx.beginPath();ctx.moveTo(cx,cy);
+ctx.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));
+ctx.strokeStyle='#e2e8f0';ctx.stroke();
+}
+ctx.beginPath();
+for(var di=0;di<n;di++){
+var da=Math.PI*2*di/n-Math.PI/2;
+var dr=R*Math.max(pcts[di],5)/100;
+var dx=cx+dr*Math.cos(da),dy=cy+dr*Math.sin(da);
+if(di===0) ctx.moveTo(dx,dy); else ctx.lineTo(dx,dy);
+}
+ctx.closePath();
+var grad=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+grad.addColorStop(0,'rgba(255,107,53,0.25)');grad.addColorStop(1,'rgba(78,205,196,0.25)');
+ctx.fillStyle=grad;ctx.fill();
+ctx.strokeStyle='rgba(255,107,53,0.8)';ctx.lineWidth=2.5;ctx.stroke();
+for(var pi=0;pi<n;pi++){
+var pa=Math.PI*2*pi/n-Math.PI/2;
+var pr=R*Math.max(pcts[pi],5)/100;
+var px=cx+pr*Math.cos(pa),py=cy+pr*Math.sin(pa);
+ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fillStyle=categories[pi].color;ctx.fill();
+ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+var lx=cx+(R+22)*Math.cos(pa),ly=cy+(R+22)*Math.sin(pa);
+ctx.font='bold 12px sans-serif';ctx.fillStyle=categories[pi].color;ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillText(categories[pi].icon,lx,ly-8);
+ctx.font='10px sans-serif';ctx.fillStyle='#64748b';
+ctx.fillText(pcts[pi]+'分',lx,ly+8);
+}
+}
+
+document.getElementById('btnStart').addEventListener('click',function(){startQuiz();});
+</script>
+</body>
+</html>
