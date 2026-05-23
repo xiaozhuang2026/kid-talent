@@ -188,6 +188,12 @@ const opt=e.target.closest('.option');
 if(!opt)return;
 selectOpt(parseInt(opt.dataset.idx));
 });
+document.getElementById('optsList').addEventListener('touchend',function(e){
+const opt=e.target.closest('.option');
+if(!opt)return;
+e.preventDefault();
+selectOpt(parseInt(opt.dataset.idx));
+});
 // Auto-scroll to top of question
 box.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -252,7 +258,17 @@ ${cardsHTML}
 // Draw radar chart
 setTimeout(()=>drawRadar(pcts),100);
 // Bind retry button
-document.getElementById('btnRetry').addEventListener('click',retryQuiz);
+(function(){
+var btn=document.getElementById('btnRetry');
+var fired=false;
+function go(e){
+if(fired)return;fired=true;
+e.preventDefault();
+retryQuiz();
+}
+btn.addEventListener('touchend',go,false);
+btn.addEventListener('click',go,false);
+})();
 window.scrollTo({top:0,behavior:'smooth'});
 }
 function retryQuiz(){
@@ -312,8 +328,18 @@ ctx.font='10px sans-serif';ctx.fillStyle='#64748b';
 ctx.fillText(pcts[i]+'分',lx,ly+8);
 }
 }
-// Bind start button
-document.getElementById('btnStart').addEventListener('click',startQuiz);
+// Bind start button - use both click and touchend for iOS Safari
+(function(){
+var btn=document.getElementById('btnStart');
+var fired=false;
+function go(e){
+if(fired)return;fired=true;
+e.preventDefault();e.stopPropagation();
+startQuiz();
+}
+btn.addEventListener('touchend',go,false);
+btn.addEventListener('click',go,false);
+})();
 </script>
 </body>
 </html>
